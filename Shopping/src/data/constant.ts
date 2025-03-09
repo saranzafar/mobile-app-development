@@ -11,7 +11,7 @@ export const PRODUCT_LIST: Product[] = [
     {
         id: 'prod002',
         name: 'Stainless Steel Water Bottle',
-        imageUrl: 'https://images.unsplash.com/photo-1602143407151-1b66b3e23f99',
+        imageUrl: 'https://images.unsplash.com/photo-1544003484-3cd181d17917',
         originalPrice: 29.99,
         discountPrice: 24.99,
         rating: 4.7,
@@ -20,7 +20,7 @@ export const PRODUCT_LIST: Product[] = [
     {
         id: 'prod003',
         name: 'Men`s Leather Jacket',
-        imageUrl: 'https://images.unsplash.com/photo-1523206489230-c012c64b1ec7',
+        imageUrl: 'https://unsplash.com/photos/a-man-with-a-beard-wearing-a-black-leather-jacket-P8Gva6BhAXI',
         originalPrice: 149.99,
         discountPrice: 119.99,
         rating: 4.8,
@@ -29,7 +29,7 @@ export const PRODUCT_LIST: Product[] = [
     {
         id: 'prod004',
         name: 'Smart LED TV 55-inch',
-        imageUrl: 'https://images.unsplash.com/photo-1593789187010-b87ff6151669',
+        imageUrl: 'https://unsplash.com/photos/a-lamp-on-a-table-in-front-of-a-picture-of-a-city-_7OnD9wtfe8',
         originalPrice: 599.99,
         discountPrice: 499.99,
         rating: 4.6,
@@ -56,7 +56,7 @@ export const PRODUCT_LIST: Product[] = [
     {
         id: 'prod007',
         name: 'Fitness Smartwatch',
-        imageUrl: 'https://images.unsplash.com/photo-1575318634028-6fa531643de8',
+        imageUrl: 'https://unsplash.com/photos/black-apple-watch-with-black-strap-0jIxHsotdac',
         originalPrice: 99.99,
         discountPrice: 79.99,
         rating: 4.3,
@@ -65,7 +65,7 @@ export const PRODUCT_LIST: Product[] = [
     {
         id: 'prod008',
         name: 'Portable Camping Tent',
-        imageUrl: 'https://images.unsplash.com/photo-1504280390367-7b1f9a52d4d2',
+        imageUrl: 'https://unsplash.com/photos/an-orange-and-red-tent-sitting-on-top-of-a-rock-6IZbB5qraj0',
         originalPrice: 89.99,
         discountPrice: 69.99,
         rating: 4.6,
@@ -83,10 +83,10 @@ export const PRODUCT_LIST: Product[] = [
     {
         id: 'prod010',
         name: 'Cordless Electric Kettle',
-        imageUrl: 'https://images.unsplash.com/photo-1572965075448-247ab08e14e5',
+        imageUrl: 'https://unsplash.com/photos/white-and-black-kettle-on-stove-ODZkfxeAvx0',
         originalPrice: 49.99,
         discountPrice: 39.99,
         rating: 4.7,
         tags: ['kitchen', 'appliances', 'home', 'convenience'],
-    }
+    },
 ];

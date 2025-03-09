@@ -1,19 +1,8 @@
-import { Text, StyleSheet, View } from 'react-native';
-import React, { Component } from 'react';
+import { View } from 'react-native';
+import React from 'react';
 
-export default class Seprator extends Component {
-    render() {
-        return (
-            <View style={styles.seprator}>
-                <Text>Seprator</Text>
-            </View>
-        );
-    }
-}
+const Seprator = () => {
+    return <View className="h-px bg-gray-200 my-2" />;
+};
 
-const styles = StyleSheet.create({
-    seprator: {
-        height: 0.8,
-        backgroundColor: '#CAD5E2',
-    },
-});
+export default Seprator;

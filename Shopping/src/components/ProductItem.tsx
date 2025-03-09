@@ -1,31 +1,32 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
-import React, { PropsWithChildren } from 'react';
+import { Image, Text, View } from 'react-native';
+import React from 'react';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-type ProductProps = PropsWithChildren<{
-    product: Product
-}>
+interface ProductItemProps {
+    product: Product;
+}
 
-const ProductItem = ({ product }: ProductProps) => {
+const ProductItem = ({ product }: ProductItemProps) => {
+
     return (
-        <View>
+        <View className="flex-row items-center">
             <Image
                 source={{ uri: product.imageUrl }}
+                className="rounded-md mr-4 w-20 h-20"
+                resizeMode="cover"
             />
-            <View>
-                <Text>{product.name}</Text>
-                <View>
-                    <Text>{product.rating}*</Text>
+            <View className="flex-1">
+                <Text className="text-lg font-semibold text-gray-800">{product.name}</Text>
+                <View className="flex-row items-center">
+                    <Icon name="star" size={16} color="#FFD700" />
+                    <Text className="text-sm text-gray-600 ml-1">{product.rating}</Text>
                 </View>
-
-                <View>
-                    <Text>{product.originalPrice.toLocaleString()}</Text>
-                    <Text>{product.discountPrice.toLocaleString()}</Text>
-                </View>
+                <Text className="text-md text-green-600 font-medium">
+                    ${product.discountPrice.toFixed(2)}
+                </Text>
             </View>
         </View>
     );
 };
 
 export default ProductItem;
-
-const styles = StyleSheet.create({});
