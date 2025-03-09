@@ -23,7 +23,7 @@ const Details = ({ route }: DetailsProps) => {
                 <View>
                     <Text>{product.name}</Text>
                     <View>
-                        <Text>{product.rating}*</Text>
+                        <Text className="text-xl text-red-600">{product.rating}*</Text>
                     </View>
 
                     <View>

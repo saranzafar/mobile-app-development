@@ -1,4 +1,5 @@
 import React from 'react';
+import '../src/global.css';
 
 // Navigation
 import { NavigationContainer } from '@react-navigation/native';
