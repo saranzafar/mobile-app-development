@@ -5,8 +5,11 @@ import Snackbar from 'react-native-snackbar';
 
 const appwriteClient = new Client();
 
-const APPWRITE_ENDPOINT: string = Config.APPWRITE_ENDPOINT!;
-const APPWRITE_PROJECT_ID: string = Config.APPWRITE_PROJECT_ID!;
+// const APPWRITE_ENDPOINT: string = Config.APPWRITE_ENDPOINT!;
+// const APPWRITE_PROJECT_ID: string = Config.APPWRITE_PROJECT_ID!;
+
+const APPWRITE_ENDPOINT: string = 'https://cloud.appwrite.io/v1';
+const APPWRITE_PROJECT_ID: string = '67cdb9fc002c8ccb1057';
 
 type CreateUserAccount = {
     email: string;

@@ -27,5 +27,3 @@ export const AppwriteProvider: FC<PropsWithChildren> = ({ children }) => {
         </AppwriteContext.Provider>
     );
 };
-
-export default AppwriteProvider;
