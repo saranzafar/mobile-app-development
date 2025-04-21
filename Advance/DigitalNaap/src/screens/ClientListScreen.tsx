@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+// src/screens/ClientListScreen.tsx
+import React, { useEffect, useState, useCallback } from 'react';
 import {
+    StatusBar,
     View,
     Text,
     FlatList,
@@ -9,26 +11,24 @@ import {
     RefreshControl,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigations/AppNavigator';
-import { Client } from '../types/index';
+import { Client } from '../types';
 import { getClients } from '../services/measurementService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ClientList'>;
 
-const ClientListScreen: React.FC<Props> = ({ navigation }) => {
+export default function ClientListScreen({ navigation }: Props) {
     const { theme } = useTheme();
+    const insets = useSafeAreaInsets();
+
     const [clients, setClients] = useState<Client[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [refreshing, setRefreshing] = useState<boolean>(false);
+    const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string>('');
 
-    // Load clients when component mounts
-    useEffect(() => {
-        fetchClients();
-    }, []);
-
-    const fetchClients = async () => {
+    const fetchClients = useCallback(async () => {
         setLoading(true);
         setError('');
         try {
@@ -39,9 +39,13 @@ const ClientListScreen: React.FC<Props> = ({ navigation }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const handleRefresh = async () => {
+    useEffect(() => {
+        fetchClients();
+    }, [fetchClients]);
+
+    const onRefresh = async () => {
         setRefreshing(true);
         await fetchClients();
         setRefreshing(false);
@@ -50,106 +54,123 @@ const ClientListScreen: React.FC<Props> = ({ navigation }) => {
     const renderItem = ({ item }: { item: Client }) => (
         <TouchableOpacity
             style={[
-                styles.clientCard,
+                styles.card,
                 {
-                    backgroundColor: theme.colors.background,
                     borderColor: theme.colors.primary,
+                    backgroundColor: theme.colors.background,
                 },
             ]}
-            onPress={() =>
-                navigation.navigate('ClientDetail', { clientId: item.id })
-            } // Adjust this if you haven't implemented ClientDetail
+            // onPress={() => navigation.navigate('ClientDetail', { clientId: item.id })}
         >
-            <Text style={[styles.clientName, { color: theme.colors.text }]}>
-                {item.name}
-            </Text>
-            <Text style={[styles.clientMeasurements, { color: theme.colors.text }]}>
-                Chest: {item.chest} | Waist: {item.waist} | Hips: {item.hips}
+            <Text style={[styles.name, { color: theme.colors.text }]}>{item.name}</Text>
+            <Text style={[styles.measurements, { color: theme.colors.text + 'CC' }]}>
+                Chest: {item.chest} · Waist: {item.waist} · Hips: {item.hips}
             </Text>
         </TouchableOpacity>
     );
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            {loading && !refreshing ? (
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-            ) : error ? (
-                <Text style={[styles.errorText, { color: 'red' }]}>{error}</Text>
-            ) : (
-                <FlatList
-                    data={clients}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={renderItem}
-                    refreshControl={
-                        <RefreshControl
-                            refreshing={refreshing}
-                            onRefresh={handleRefresh}
-                            tintColor={theme.colors.primary}
-                        />
-                    }
-                    ListEmptyComponent={
-                        <Text style={[styles.emptyText, { color: theme.colors.text }]}>
-                            No clients found.
-                        </Text>
-                    }
-                />
-            )}
+        <SafeAreaView
+            style={[
+                styles.safe,
+                { backgroundColor: theme.colors.background, paddingTop: insets.top },
+            ]}
+        >
+            <StatusBar
+                translucent
+                backgroundColor="transparent"
+                barStyle={theme.colors.background === '#ffffff' ? 'dark-content' : 'light-content'}
+            />
 
-            <TouchableOpacity
-                style={[styles.addButton, { backgroundColor: theme.colors.primary }]}
-                onPress={() => navigation.navigate('AddClient')}
-            >
-                <Text style={[styles.addButtonText, { color: theme.colors.text }]}>
-                    + Add Client
-                </Text>
-            </TouchableOpacity>
-        </View>
+            <View style={styles.wrapper}>
+                {loading && !refreshing ? (
+                    <ActivityIndicator size="large" color={theme.colors.primary} />
+                ) : error ? (
+                    <Text style={[styles.message, { color: theme.colors.error || 'red' }]}>
+                        {error}
+                    </Text>
+                ) : (
+                    <FlatList
+                        data={clients}
+                        keyExtractor={(c) => c.id.toString()}
+                        renderItem={renderItem}
+                        contentContainerStyle={clients.length === 0 && styles.emptyContainer}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                                tintColor={theme.colors.primary}
+                            />
+                        }
+                        ListEmptyComponent={
+                            <Text style={[styles.message, { color: theme.colors.text + '99' }]}>
+                                No clients found.
+                            </Text>
+                        }
+                    />
+                )}
+
+                {/* + Add Client */}
+                <TouchableOpacity
+                    style={[
+                        styles.addButton,
+                        {
+                            backgroundColor: theme.colors.primary,
+                            bottom: insets.bottom + 16,
+                        },
+                    ]}
+                    onPress={() => navigation.navigate('AddClient')}
+                >
+                    <Text style={styles.addText}>+ Add Client</Text>
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     );
-};
+}
 
 const styles = StyleSheet.create({
-    container: {
+    safe: {
+        flex: 1,
+    },
+    wrapper: {
         flex: 1,
         paddingHorizontal: 16,
-        paddingTop: 20,
+        paddingTop: 16,      // pull content down a bit
     },
-    clientCard: {
-        padding: 16,
+    card: {
         borderWidth: 1,
         borderRadius: 8,
+        padding: 16,
         marginBottom: 12,
     },
-    clientName: {
+    name: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: '600',
     },
-    clientMeasurements: {
-        marginTop: 8,
+    measurements: {
         fontSize: 14,
+        marginTop: 4,
     },
-    errorText: {
+    message: {
         fontSize: 16,
-        alignSelf: 'center',
-        marginTop: 20,
+        textAlign: 'center',
+        marginTop: 32,
     },
-    emptyText: {
-        fontSize: 16,
-        alignSelf: 'center',
-        marginTop: 20,
+    emptyContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
     },
     addButton: {
         position: 'absolute',
         right: 16,
-        bottom: 16,
         paddingVertical: 12,
         paddingHorizontal: 20,
         borderRadius: 25,
-        elevation: 2,
+        elevation: 4,
     },
-    addButtonText: {
+    addText: {
+        color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '600',
     },
 });
-
-export default ClientListScreen;

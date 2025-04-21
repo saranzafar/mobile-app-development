@@ -48,30 +48,25 @@ export default function LoginScreen({ navigation }: Props) {
         }
     };
 
-    // Android offset for status bar
-    const offset = Platform.select({ ios: 0, android: StatusBar.currentHeight || 0 });
-
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
             <StatusBar
-                translucent
-                backgroundColor="transparent"
                 barStyle={theme.colors.background === '#ffffff' ? 'dark-content' : 'light-content'}
+                backgroundColor="transparent"
+                translucent
             />
 
             <KeyboardAvoidingView
-                style={styles.avoider}
-                behavior="padding"
-                keyboardVerticalOffset={offset}
+                style={styles.keyboardView}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
                 <ScrollView
-                    contentContainerStyle={styles.inner}
+                    contentContainerStyle={styles.scrollContent}
                     keyboardShouldPersistTaps="handled"
                 >
-
                     {/* Header */}
                     <View style={styles.header}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                             <ChevronLeft size={24} color={theme.colors.text} />
                         </TouchableOpacity>
                         <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Sign In</Text>
@@ -91,7 +86,7 @@ export default function LoginScreen({ navigation }: Props) {
 
                     {/* Email Field */}
                     <View style={[styles.inputContainer, { borderColor: theme.colors.text + '30' }]}>
-                        <Mail size={20} color={theme.colors.text + '99'} style={styles.icon} />
+                        <Mail size={20} color={theme.colors.text + '99'} style={styles.inputIcon} />
                         <TextInput
                             style={[styles.input, { color: theme.colors.text }]}
                             placeholder="Email Address"
@@ -106,7 +101,7 @@ export default function LoginScreen({ navigation }: Props) {
 
                     {/* Password Field */}
                     <View style={[styles.inputContainer, { borderColor: theme.colors.text + '30' }]}>
-                        <KeyRound size={20} color={theme.colors.text + '99'} style={styles.icon} />
+                        <KeyRound size={20} color={theme.colors.text + '99'} style={styles.inputIcon} />
                         <TextInput
                             style={[styles.input, { color: theme.colors.text }]}
                             placeholder="Password"
@@ -160,7 +155,6 @@ export default function LoginScreen({ navigation }: Props) {
                             </Text>
                         </TouchableOpacity>
                     </View>
-
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -168,18 +162,40 @@ export default function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    avoider: { flex: 1 },
-    inner: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        padding: 24,
+    container: {
+        flex: 1,
+        paddingTop: Platform.OS === 'android' ? 45 : 0, // Fixed top padding for Android
     },
-    header: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
-    backBtn: { padding: 4 },
-    headerTitle: { fontSize: 18, fontWeight: '600', marginLeft: 16 },
-    appName: { fontSize: 28, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
-    description: { fontSize: 16, marginBottom: 24, textAlign: 'center' },
+    keyboardView: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingHorizontal: 24,
+        paddingBottom: 40,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    backButton: {
+        padding: 4,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginLeft: 16,
+    },
+    appName: {
+        fontSize: 28,
+        fontWeight: '700',
+        marginBottom: 8,
+    },
+    description: {
+        fontSize: 16,
+        marginBottom: 24,
+        textAlign: 'center',
+    },
     errorContainer: {
         backgroundColor: '#FFEDED',
         borderLeftWidth: 4,
@@ -188,7 +204,11 @@ const styles = StyleSheet.create({
         padding: 12,
         marginBottom: 16,
     },
-    errorText: { color: '#CF1322', fontSize: 14, textAlign: 'center' },
+    errorText: {
+        color: '#CF1322',
+        fontSize: 14,
+        textAlign: 'center',
+    },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -198,11 +218,25 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         paddingHorizontal: 16,
     },
-    icon: { marginRight: 12 },
-    input: { flex: 1, fontSize: 16, height: '100%' },
-    eyeBtn: { padding: 4 },
-    forgotLink: { alignSelf: 'flex-end', marginBottom: 24 },
-    forgotText: { fontSize: 14, fontWeight: '500' },
+    inputIcon: {
+        marginRight: 12,
+    },
+    input: {
+        flex: 1,
+        fontSize: 16,
+        height: '100%',
+    },
+    eyeBtn: {
+        padding: 4,
+    },
+    forgotLink: {
+        alignSelf: 'flex-end',
+        marginBottom: 24,
+    },
+    forgotText: {
+        fontSize: 14,
+        fontWeight: '500',
+    },
     loginBtn: {
         height: inputHeight,
         borderRadius: 12,
@@ -215,8 +249,21 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 2,
     },
-    loginText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-    signUpRow: { flexDirection: 'row', justifyContent: 'center' },
-    signUpPrompt: { fontSize: 14 },
-    signUpLink: { fontSize: 14, fontWeight: '600', marginLeft: 4 },
+    loginText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    signUpRow: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    signUpPrompt: {
+        fontSize: 14,
+    },
+    signUpLink: {
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: 4,
+    },
 });
