@@ -1,6 +1,6 @@
-// src/screens/ClientListScreen.tsx
 import React, { useEffect, useState, useCallback } from 'react';
 import {
+    SafeAreaView,
     StatusBar,
     View,
     Text,
@@ -10,12 +10,12 @@ import {
     ActivityIndicator,
     RefreshControl,
 } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
-import { RootStackParamList } from '../navigations/AppNavigator';
-import { Client } from '../types';
 import { getClients } from '../services/measurementService';
+import { Client } from '../types';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigations/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ClientList'>;
 
@@ -24,8 +24,8 @@ export default function ClientListScreen({ navigation }: Props) {
     const insets = useSafeAreaInsets();
 
     const [clients, setClients] = useState<Client[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [refreshing, setRefreshing] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
 
     const fetchClients = useCallback(async () => {
@@ -52,7 +52,7 @@ export default function ClientListScreen({ navigation }: Props) {
     };
 
     const renderItem = ({ item }: { item: Client }) => (
-        <TouchableOpacity
+        <View
             style={[
                 styles.card,
                 {
@@ -60,33 +60,39 @@ export default function ClientListScreen({ navigation }: Props) {
                     backgroundColor: theme.colors.background,
                 },
             ]}
-            // onPress={() => navigation.navigate('ClientDetail', { clientId: item.id })}
         >
-            <Text style={[styles.name, { color: theme.colors.text }]}>{item.name}</Text>
-            <Text style={[styles.measurements, { color: theme.colors.text + 'CC' }]}>
+            <Text style={[styles.name, { color: theme.colors.text }]}>
+                {item.name}
+            </Text>
+            <Text style={[styles.measurements, { color: theme.colors.text + '99' }]}>
                 Chest: {item.chest} · Waist: {item.waist} · Hips: {item.hips}
             </Text>
-        </TouchableOpacity>
+        </View>
     );
 
     return (
         <SafeAreaView
             style={[
-                styles.safe,
-                { backgroundColor: theme.colors.background, paddingTop: insets.top },
+                styles.container,
+                {
+                    backgroundColor: theme.colors.background,
+                    paddingTop: insets.top,
+                },
             ]}
         >
             <StatusBar
-                translucent
+                barStyle={
+                    theme.colors.background === '#ffffff' ? 'dark-content' : 'light-content'
+                }
                 backgroundColor="transparent"
-                barStyle={theme.colors.background === '#ffffff' ? 'dark-content' : 'light-content'}
+                translucent
             />
 
-            <View style={styles.wrapper}>
+            <View style={styles.content}>
                 {loading && !refreshing ? (
                     <ActivityIndicator size="large" color={theme.colors.primary} />
                 ) : error ? (
-                    <Text style={[styles.message, { color: theme.colors.error || 'red' }]}>
+                    <Text style={[styles.message, { color: theme.colors.error }]}>
                         {error}
                     </Text>
                 ) : (
@@ -94,7 +100,9 @@ export default function ClientListScreen({ navigation }: Props) {
                         data={clients}
                         keyExtractor={(c) => c.id.toString()}
                         renderItem={renderItem}
-                        contentContainerStyle={clients.length === 0 && styles.emptyContainer}
+                        contentContainerStyle={
+                            clients.length === 0 ? styles.emptyContainer : undefined
+                        }
                         refreshControl={
                             <RefreshControl
                                 refreshing={refreshing}
@@ -110,7 +118,6 @@ export default function ClientListScreen({ navigation }: Props) {
                     />
                 )}
 
-                {/* + Add Client */}
                 <TouchableOpacity
                     style={[
                         styles.addButton,
@@ -119,9 +126,9 @@ export default function ClientListScreen({ navigation }: Props) {
                             bottom: insets.bottom + 16,
                         },
                     ]}
-                    onPress={() => navigation.navigate('AddClient')}
+                    onPress={() => navigation.navigate('AddMeasurement')}
                 >
-                    <Text style={styles.addText}>+ Add Client</Text>
+                    <Text style={styles.addButtonText}>+ Add Naap</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
@@ -129,13 +136,13 @@ export default function ClientListScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-    safe: {
+    container: {
         flex: 1,
     },
-    wrapper: {
+    content: {
         flex: 1,
         paddingHorizontal: 16,
-        paddingTop: 16,      // pull content down a bit
+        paddingTop: 16,
     },
     card: {
         borderWidth: 1,
@@ -168,7 +175,7 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         elevation: 4,
     },
-    addText: {
+    addButtonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',

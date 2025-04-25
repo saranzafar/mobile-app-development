@@ -13,9 +13,9 @@ import {
     StatusBar,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigations/AppNavigator';
-import { useTheme } from '../contexts/ThemeContext';
-import { sendOtp, signUp } from '../services/authService';
+import { RootStackParamList } from '../../navigations/AppNavigator';
+import { useTheme } from '../../contexts/ThemeContext';
+import { sendOtp, signUp } from '../../services/authService';
 import { Eye, EyeOff, ChevronLeft, User, Mail, KeyRound } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;

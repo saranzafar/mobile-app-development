@@ -13,9 +13,9 @@ import {
     StyleSheet,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigations/AppNavigator';
-import { useTheme } from '../contexts/ThemeContext';
-import { verifyOtp, sendOtp } from '../services/authService';
+import { RootStackParamList } from '../../navigations/AppNavigator';
+import { useTheme } from '../../contexts/ThemeContext';
+import { verifyOtp, sendOtp } from '../../services/authService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VerifyOtp'>;
 const inputHeight = 56;

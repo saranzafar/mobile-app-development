@@ -13,10 +13,10 @@ import {
     StatusBar,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigations/AppNavigator';
-import { useTheme } from '../contexts/ThemeContext';
+import { RootStackParamList } from '../../navigations/AppNavigator';
+import { useTheme } from '../../contexts/ThemeContext';
 import { ChevronLeft, Mail } from 'lucide-react-native';
-import { forgotPassword } from '../services/authService';
+import { forgotPassword } from '../../services/authService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>;
 

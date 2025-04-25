@@ -14,9 +14,9 @@ import {
     StyleSheet,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigations/AppNavigator';
-import { useTheme } from '../contexts/ThemeContext';
-import { updatePassword, signOut } from '../services/authService';
+import { RootStackParamList } from '../../navigations/AppNavigator';
+import { useTheme } from '../../contexts/ThemeContext';
+import { updatePassword, signOut } from '../../services/authService';
 import { Eye, EyeOff } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ResetPassword'>;

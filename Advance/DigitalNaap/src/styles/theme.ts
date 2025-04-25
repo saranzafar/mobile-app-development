@@ -1,30 +1,35 @@
-// Example: src/styles/theme.ts
 export interface Theme {
     colors: {
         background: string;
+        card: string;
         text: string;
         primary: string;
         gradientStart: string;
         gradientEnd: string;
+        error: string;
     };
 }
 
 export const lightTheme: Theme = {
     colors: {
-        background: '#ffffff',
+        background: '#FFFFFF',
+        card: '#F5F5F5',    // light card background
         text: '#333333',
-        primary: '#6200ee',
-        gradientStart: '#6200ee',
-        gradientEnd: '#9c67ff', // a lighter version of primary
+        primary: '#6200EE',
+        gradientStart: '#6200EE',
+        gradientEnd: '#9C67FF',
+        error: '#FF0000',
     },
 };
 
 export const darkTheme: Theme = {
     colors: {
-        background: '#333333',
-        text: '#ffffff',
-        primary: '#bb86fc',
-        gradientStart: '#bb86fc',
-        gradientEnd: '#d3a7ff',
+        background: '#121212',
+        card: '#1E1E1E',
+        text: '#FFFFFF',
+        primary: '#BB86FC',
+        gradientStart: '#BB86FC',
+        gradientEnd: '#D3A7FF',
+        error: '#CF6679',
     },
 };
