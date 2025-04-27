@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     SafeAreaView,
     View,
@@ -16,13 +16,18 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Trash2, Plus } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../navigations/AppNavigator';
-import { MeasurementValues } from '../types';
+import { NewMeasurement } from '../types';
+import {
+    addMeasurement,
+    getMeasurementById,
+    updateMeasurement,
+    MeasurementRecord,
+} from '../services/measurementService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddMeasurement'>;
 
-// required full-width
 const singleFields: {
-    key: keyof MeasurementValues;
+    key: keyof NewMeasurement;
     label: string;
     placeholder: string;
     keyboardType: 'default' | 'phone-pad';
@@ -31,7 +36,6 @@ const singleFields: {
         { key: 'phone', label: 'Phone Number', placeholder: 'Enter phone number', keyboardType: 'phone-pad' },
     ];
 
-// optional measurement pairs
 const measurementRows = [
     ['neck', 'Neck', 'shoulder', 'Shoulder'],
     ['chest', 'Chest', 'waist', 'Waist'],
@@ -39,9 +43,12 @@ const measurementRows = [
     ['sleeve', 'Sleeve', 'bicep', 'Bicep'],
 ] as const;
 
-export default function AddMeasurementScreen({ navigation }: Props) {
+export default function AddMeasurementScreen({ route, navigation }: Props) {
     const { theme } = useTheme();
-    const [values, setValues] = useState<MeasurementValues>({
+    const editingId = (route.params as any)?.id as number | undefined;
+    const isEditing = typeof editingId === 'number';
+
+    const [values, setValues] = useState<NewMeasurement>({
         name: '', phone: '',
         neck: '', shoulder: '',
         chest: '', waist: '',
@@ -51,9 +58,10 @@ export default function AddMeasurementScreen({ navigation }: Props) {
     });
     const [custom, setCustom] = useState<{ label: string; value: string }[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [initialLoading, setInitialLoading] = useState<boolean>(isEditing);
 
-    const handleChange = (k: keyof MeasurementValues, t: string) =>
+    const handleChange = (k: keyof NewMeasurement, t: string) =>
         setValues(v => ({ ...v, [k]: t }));
 
     const addCustom = () => setCustom(c => [...c, { label: '', value: '' }]);
@@ -62,35 +70,79 @@ export default function AddMeasurementScreen({ navigation }: Props) {
     const updateCustom = (i: number, f: 'label' | 'value', t: string) =>
         setCustom(c => c.map((e, idx) => idx === i ? { ...e, [f]: t } : e));
 
-    const handleSave = () => {
+    // If editing, fetch existing record
+    useEffect(() => {
+        if (!isEditing) { return; }
+        (async () => {
+            try {
+                setInitialLoading(true);
+                const { data, error: supaError } = await getMeasurementById(editingId!);
+                if (supaError) { throw supaError; }
+                if (data) {
+                    // populate built-ins and customs
+                    const record = data as MeasurementRecord;
+                    const { custom_fields, ...builtIns } = record;
+                    setValues(builtIns);
+                    setCustom(custom_fields || []);
+                }
+            } catch (e: any) {
+                setError(e.message || 'Failed to load measurement');
+            } finally {
+                setInitialLoading(false);
+            }
+        })();
+    }, [editingId, isEditing]);
+
+    const handleSave = async () => {
         setError(null);
-        for (let f of singleFields) {
+        // validate required
+        for (const f of singleFields) {
             if (!values[f.key].trim()) {
                 setError(`Please enter ${f.label.toLowerCase()}`);
                 return;
             }
         }
+        // validate customs
         for (let i = 0; i < custom.length; i++) {
             if (!custom[i].label.trim() || !custom[i].value.trim()) {
                 setError('Fill in or remove all custom fields');
                 return;
             }
         }
+
         setLoading(true);
-        // TODO: call your API with values + custom
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            if (isEditing) {
+                const { error: supaError } = await updateMeasurement(editingId!, {
+                    ...values,
+                    custom_fields: custom,
+                });
+                if (supaError) { throw supaError; }
+            } else {
+                const { error: supaError } = await addMeasurement(values, custom);
+                if (supaError) { throw supaError; }
+            }
             navigation.goBack();
-        }, 1000);
+        } catch (e: any) {
+            setError(e.message || 'Unexpected error');
+        } finally {
+            setLoading(false);
+        }
     };
+
+    if (initialLoading) {
+        return (
+            <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+                <StatusBar barStyle={theme.colors.background === '#ffffff' ? 'dark-content' : 'light-content'} translucent />
+                <View style={styles.loadingCenter}>
+                    <ActivityIndicator size="large" color={theme.colors.primary} />
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <StatusBar
-                translucent
-                backgroundColor="transparent"
-                barStyle={theme.colors.background === '#ffffff' ? 'dark-content' : 'light-content'}
-            />
             <KeyboardAvoidingView
                 style={styles.flex}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -100,12 +152,6 @@ export default function AddMeasurementScreen({ navigation }: Props) {
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                 >
-                    <View style={styles.header}>
-                        <Text style={[styles.title, { color: theme.colors.primary }]}>
-                            Add Measurement
-                        </Text>
-                    </View>
-
                     {error && (
                         <View style={styles.errorContainer}>
                             <Text style={styles.errorText}>{error}</Text>
@@ -113,16 +159,9 @@ export default function AddMeasurementScreen({ navigation }: Props) {
                     )}
 
                     <View style={styles.formSection}>
-                        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                            Client Information
-                        </Text>
-
-                        {/* full-width */}
                         {singleFields.map(f => (
                             <View key={f.key} style={styles.fullRow}>
-                                <Text style={[styles.label, { color: theme.colors.text }]}>
-                                    {f.label}
-                                </Text>
+                                <Text style={[styles.label, { color: theme.colors.text }]}>{f.label}</Text>
                                 <TextInput
                                     style={[styles.input, {
                                         borderColor: theme.colors.text + '30',
@@ -140,11 +179,7 @@ export default function AddMeasurementScreen({ navigation }: Props) {
                     </View>
 
                     <View style={styles.formSection}>
-                        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                            Measurements
-                        </Text>
-
-                        {/* measurement pairs */}
+                        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Measurements</Text>
                         {measurementRows.map(([k1, l1, k2, l2], i) => (
                             <View key={i} style={styles.row}>
                                 <View style={styles.half}>
@@ -198,15 +233,13 @@ export default function AddMeasurementScreen({ navigation }: Props) {
                             </TouchableOpacity>
                         </View>
 
-                        {custom.length === 0 && (
+                        {custom.length === 0 ? (
                             <View style={styles.emptyCustom}>
                                 <Text style={[styles.emptyText, { color: theme.colors.text + '70' }]}>
                                     No custom measurements added
                                 </Text>
                             </View>
-                        )}
-
-                        {custom.map((f, i) => (
+                        ) : custom.map((f, i) => (
                             <View key={i} style={styles.row}>
                                 <View style={styles.half}>
                                     <TextInput
@@ -249,6 +282,7 @@ export default function AddMeasurementScreen({ navigation }: Props) {
                     <TouchableOpacity
                         style={[
                             styles.saveButton,
+                            { backgroundColor: theme.colors.primary },
                             loading && styles.saveButtonLoading,
                         ]}
                         onPress={handleSave}
@@ -256,7 +290,9 @@ export default function AddMeasurementScreen({ navigation }: Props) {
                     >
                         {loading
                             ? <ActivityIndicator color="#fff" />
-                            : <Text style={styles.saveText}>Save Measurement</Text>
+                            : <Text style={styles.saveText}>
+                                {isEditing ? 'Update Measurement' : 'Save Measurement'}
+                            </Text>
                         }
                     </TouchableOpacity>
                 </ScrollView>
@@ -266,124 +302,28 @@ export default function AddMeasurementScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
-    container: {
-        flex: 1,
-    },
-    inner: {
-        flexGrow: 1,
-        padding: 20,
-        paddingBottom: 30,
-    },
-    header: {
-        marginBottom: 16,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: '700',
-        letterSpacing: 0.5,
-    },
-    formSection: {
-        marginBottom: 24,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 12,
-    },
-    fullRow: {
-        marginBottom: 16,
-    },
-    row: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-    },
-    half: {
-        flex: 1,
-    },
-    spacer: {
-        width: 12,
-    },
-    customValueSection: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    label: {
-        fontSize: 14,
-        fontWeight: '500',
-        marginBottom: 6,
-        marginLeft: 2,
-    },
-    input: {
-        height: 48,
-        borderWidth: 1,
-        borderRadius: 10,
-        paddingHorizontal: 12,
-        fontSize: 15,
-    },
-    customHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    addCustomButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-    },
-    addCustomText: {
-        fontSize: 14,
-        fontWeight: '500',
-        marginLeft: 4,
-    },
-    emptyCustom: {
-        paddingVertical: 16,
-        alignItems: 'center',
-    },
-    emptyText: {
-        fontSize: 14,
-    },
-    removeBtn: {
-        marginLeft: 8,
-        padding: 4,
-    },
-    errorContainer: {
-        backgroundColor: '#FFEDED',
-        borderLeftWidth: 4,
-        borderLeftColor: '#FF4D4F',
-        padding: 12,
-        marginBottom: 16,
-        borderRadius: 8,
-    },
-    errorText: {
-        color: '#CF1322',
-        fontSize: 14,
-    },
-    saveButton: {
-        height: 54,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: theme.colors.primary,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    saveButtonLoading: {
-        opacity: 0.7,
-    },
-    saveText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontWeight: '600',
-    },
+    flex: { flex: 1 },
+    container: { flex: 1 },
+    inner: { flexGrow: 1, padding: 20, paddingBottom: 30 },
+    formSection: { marginBottom: 10 },
+    sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 12 },
+    fullRow: { marginBottom: 16 },
+    row: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 },
+    half: { flex: 1 },
+    spacer: { width: 12 },
+    customValueSection: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+    label: { fontSize: 14, fontWeight: '500', marginBottom: 6, marginLeft: 2 },
+    input: { height: 48, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, fontSize: 15 },
+    customHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+    addCustomButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
+    addCustomText: { fontSize: 14, fontWeight: '500', marginLeft: 4 },
+    emptyCustom: { paddingVertical: 16, alignItems: 'center' },
+    emptyText: { fontSize: 14 },
+    removeBtn: { marginLeft: 8, padding: 4 },
+    errorContainer: { backgroundColor: '#FFEDED', borderLeftWidth: 4, borderLeftColor: '#FF4D4F', padding: 12, marginBottom: 16, borderRadius: 8 },
+    errorText: { color: '#CF1322', fontSize: 14 },
+    saveButton: { height: 54, borderRadius: 12, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+    saveButtonLoading: { opacity: 0.7 },
+    saveText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
+    loadingCenter: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });

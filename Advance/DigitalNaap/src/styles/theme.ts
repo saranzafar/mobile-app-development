@@ -1,5 +1,6 @@
 export interface Theme {
     colors: {
+        border: string;
         background: string;
         card: string;
         text: string;
@@ -13,12 +14,13 @@ export interface Theme {
 export const lightTheme: Theme = {
     colors: {
         background: '#FFFFFF',
-        card: '#F5F5F5',    // light card background
+        card: '#F5F5F5',
         text: '#333333',
         primary: '#6200EE',
         gradientStart: '#6200EE',
         gradientEnd: '#9C67FF',
         error: '#FF0000',
+        border: '#D3D3D3',
     },
 };
 
@@ -31,5 +33,6 @@ export const darkTheme: Theme = {
         gradientStart: '#BB86FC',
         gradientEnd: '#D3A7FF',
         error: '#CF6679',
+        border: '#444444',
     },
 };

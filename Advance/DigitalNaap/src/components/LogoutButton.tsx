@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/AppNavigator';
 import { useTheme } from '../contexts/ThemeContext';
+import { LogOut } from 'lucide-react-native';
 
 export default function LogoutButton() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -18,7 +19,7 @@ export default function LogoutButton() {
 
     return (
         <TouchableOpacity onPress={handleLogout} style={styles.button}>
-            <Text style={[styles.text, { color: theme.colors.primary }]}>Logout</Text>
+            <Text style={[styles.text, { color: theme.colors.error }]}>Logout</Text>
         </TouchableOpacity>
     );
 }

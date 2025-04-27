@@ -1,3 +1,5 @@
+export type NewMeasurement = Omit<MeasurementValues, 'id' | 'created_at'>;
+
 export interface Client {
     id: number;
     name: string;
@@ -7,6 +9,8 @@ export interface Client {
 }
 
 export interface MeasurementValues {
+    created_at: string;
+    id: number;
     name: string;
     phone: string;
     neck: string;

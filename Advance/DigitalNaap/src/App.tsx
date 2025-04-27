@@ -30,7 +30,6 @@ const Main = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // any other static layout styles can go here
   },
 });
 

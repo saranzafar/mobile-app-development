@@ -1,4 +1,3 @@
-// src/navigations/AppNavigator.tsx
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +12,7 @@ import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 import ClientListScreen from '../screens/ClientListScreen';
 import LogoutButton from '../components/LogoutButton';
 import AddMeasurementScreen from '../screens/AddMeasurementScreen';
+import MeasurementDetail from '../screens/MeasurementDetail';
 
 export type RootStackParamList = {
     Landing: undefined;
@@ -22,7 +22,8 @@ export type RootStackParamList = {
     VerifyOtp: { email: string; flow: 'signup' | 'forgot' };
     ResetPassword: undefined;
     ClientList: undefined;
-    AddMeasurement: undefined;
+    AddMeasurement: { id?: number };
+    MeasurementDetail: { id: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -39,9 +40,8 @@ export const AppNavigator: React.FC = () => {
             screenOptions={{
                 headerStyle: { backgroundColor: theme.colors.background },
                 headerTintColor: theme.colors.text,
-                // ensure header is opaque (no bleed-through)
                 headerTransparent: false,
-                headerTitleAlign: 'center',
+                headerTitleAlign: 'left',
             }}
         >
             {session ? (
@@ -59,9 +59,18 @@ export const AppNavigator: React.FC = () => {
                     <Stack.Screen
                         name="AddMeasurement"
                         component={AddMeasurementScreen}
+                        options={({ route }) => ({
+                            headerTitle: route.params?.id
+                                ? 'Edit Measurement'
+                                : 'Add Measurement',
+                        })}
+                    />
+                    <Stack.Screen
+                        name="MeasurementDetail"
+                        component={MeasurementDetail}
                         options={{
-                            title: 'Add Measurement',
-                            headerShown: true,
+                            title: 'Details',
+                            headerShown: false,
                         }}
                     />
                 </>

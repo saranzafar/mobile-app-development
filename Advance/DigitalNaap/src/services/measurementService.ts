@@ -1,17 +1,97 @@
-import { Client } from '../types';
+import { supabase } from '../supabaseClient';
+import type { NewMeasurement } from '../types';
+import type { PostgrestError } from '@supabase/supabase-js';
 
-export const getClients = async (): Promise<Client[]> => {
-    // Dummy client list for testing purposes
-    const dummyClients: Client[] = [
-        { id: 1, name: 'Alice Johnson', chest: 34, waist: 28, hips: 36 },
-        { id: 2, name: 'Bob Smith', chest: 40, waist: 32, hips: 42 },
-        { id: 3, name: 'Carol White', chest: 36, waist: 30, hips: 38 },
-    ];
+/**
+ * A single measurement record as stored in Supabase.
+ * » id, created_at, all of your MeasurementValues fields, plus:
+ * » custom_fields: an array of { label, value } pairs
+ */
+export interface MeasurementRecord extends NewMeasurement {
+    id: number
+    created_at: string
+    custom_fields: { label: string; value: string }[]
+}
 
-    // Simulate API delay
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve(dummyClients);
-        }, 1000);
-    });
+/**
+ * Create a new measurement.
+ * @param values – all the built-in fields (name, chest, waist, etc.)
+ * @param customFields – any extra fields the tailor added
+ */
+export const addMeasurement = async (
+    values: NewMeasurement,
+    customFields: { label: string; value: string }[] = []
+): Promise<{ data: MeasurementRecord | null; error: PostgrestError | null }> => {
+    const payload = {
+        ...values,
+        custom_fields: customFields,
+    };
+    const { data, error } = await supabase
+        .from<MeasurementRecord>('measurements')
+        .insert([payload])
+        .single();
+    console.log('data: ', data);
+    console.log('error: ', error);
+
+    return { data, error };
+};
+
+/**
+ * Fetch *all* measurements.
+ */
+export const getMeasurements = async (): Promise<{
+    data: MeasurementRecord[] | null
+    error: PostgrestError | null
+}> => {
+    const { data, error } = await supabase
+        .from<MeasurementRecord>('measurements')
+        .select('*')
+        .order('created_at', { ascending: false });
+    return { data, error };
+};
+
+/**
+ * Fetch a single measurement record by its primary key.
+ */
+export const getMeasurementById = async (
+    id: number
+): Promise<{ data: MeasurementRecord | null; error: PostgrestError | null }> => {
+    const { data, error } = await supabase
+        .from<MeasurementRecord>('measurements')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    return { data, error };
+};
+
+/**
+ * Update an existing measurement by its ID.
+ * Pass only the fields you want to change.
+ */
+export const updateMeasurement = async (
+    id: number,
+    updates: Partial<NewMeasurement> & {
+        custom_fields?: { label: string; value: string }[]
+    }
+): Promise<{ data: MeasurementRecord | null; error: PostgrestError | null }> => {
+    const { data, error } = await supabase
+        .from<MeasurementRecord>('measurements')
+        .update(updates)
+        .eq('id', id)
+        .single();
+    return { data, error };
+};
+
+/**
+ * Delete a measurement by its ID.
+ */
+export const deleteMeasurement = async (
+    id: number
+): Promise<{ error: PostgrestError | null }> => {
+    const { error } = await supabase
+        .from('measurements')
+        .delete()
+        .eq('id', id);
+    return { error };
 };
