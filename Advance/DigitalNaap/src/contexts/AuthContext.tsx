@@ -25,7 +25,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         // 1) Load initial session
         supabase.auth.getSession().then(({ data }) => {
-            setSession(data.session);
+            if (data.session && data?.session.expires_at * 1000 < Date.now()) {
+                supabase.auth.signOut();
+            } else {
+                setSession(data.session);
+            }
             setLoading(false);
         });
 

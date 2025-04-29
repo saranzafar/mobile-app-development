@@ -14,6 +14,9 @@ export const logIn = async (email: string, password: string) => {
         email,
         password,
     });
+    console.log('error: ', error);
+    console.log('data: ', data);
+
     return { error, data };
 };
 

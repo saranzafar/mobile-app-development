@@ -22,8 +22,6 @@ const inputHeight = 56;
 
 export default function OtpVerificationScreen({ route, navigation }: Props) {
     const { email, flow } = route.params;
-    console.log('Email:', email);
-    console.log('Flow:', flow);
 
     const { theme } = useTheme();
 
@@ -41,14 +39,12 @@ export default function OtpVerificationScreen({ route, navigation }: Props) {
                 setError(verifyError.message);
             } else if (data.session) {
                 if (flow === 'forgot') {
-                    console.log('inside if: ', flow);
-
                     // Forgot‐password path → force new password
                     navigation.replace('ResetPassword');
                 } else {
-                    console.log('inside else: ', flow);
                     // Signup path → full login
-                    navigation.replace('ClientList');
+                    // navigation.replace('ClientList');
+                    // autometically navigate to client list
                 }
             } else {
                 setError('Unexpected response, please try again.');

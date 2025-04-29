@@ -22,16 +22,19 @@ export const addMeasurement = async (
     values: NewMeasurement,
     customFields: { label: string; value: string }[] = []
 ): Promise<{ data: MeasurementRecord | null; error: PostgrestError | null }> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { throw new Error('Not authenticated'); }
+
     const payload = {
         ...values,
         custom_fields: customFields,
+        user_id: user.id,
     };
+
     const { data, error } = await supabase
         .from<MeasurementRecord>('measurements')
         .insert([payload])
         .single();
-    console.log('data: ', data);
-    console.log('error: ', error);
 
     return { data, error };
 };
@@ -43,9 +46,15 @@ export const getMeasurements = async (): Promise<{
     data: MeasurementRecord[] | null
     error: PostgrestError | null
 }> => {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();            // get current user
+    if (!user) { throw new Error('Not authenticated'); }
+
     const { data, error } = await supabase
         .from<MeasurementRecord>('measurements')
         .select('*')
+        .eq('user_id', user.id)                 // only your rows
         .order('created_at', { ascending: false });
     return { data, error };
 };

@@ -40,7 +40,8 @@ export default function LoginScreen({ navigation }: Props) {
         try {
             const { error: authError } = await logIn(email, password);
             if (authError) { setError(authError.message); }
-            else { navigation.replace('ClientList'); }
+            // else { navigation.replace('ClientList'); }
+            // autometically navigate to the client list screen
         } catch (e: any) {
             setError(e.message);
         } finally {
